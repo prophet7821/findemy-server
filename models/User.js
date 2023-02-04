@@ -24,14 +24,17 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.statics.findUserById = async function(userId) {
+userSchema.statics.findUserById = async function (userId) {
   const user = await this.findOne({ _id: userId });
-  if (!user) throw Error("User not found");
+  if (!user) throw new Error("User not found");
   return user;
-}
+};
 
 userSchema.statics.login = async function (email, password) {
-  if (!email || !password) throw Error("All fields must be filled");
+  if (!email || !password) throw new Error("All fields must be filled");
+  if (!validator.isEmail(email)) {
+    throw new Error("Email not Valid");
+  }
   const user = await this.findOne({ email, password });
   if (!user) throw Error("Wrong Credentials");
   return user;
@@ -74,7 +77,7 @@ userSchema.statics.removeFromCart = async function (id, course) {
 
 userSchema.statics.emptyCart = async function (id) {
   const user = await this.findOne({ _id: id });
-  user.enrolledCourses = [...user.enrolledCourses,...user.cartItems]
+  user.enrolledCourses = [...user.enrolledCourses, ...user.cartItems];
   user.cartItems = [];
   await user.save();
   return user.cartItems;
